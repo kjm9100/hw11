@@ -37,7 +37,7 @@ void PrintGraph(header* head); // 그래프 출력하는 함수
 void DepthFS(header* head,int num_v); // DFS(깊이우선탐색)하는 함수(연결리스트가 아닐  
 void BreathFS(header *head, int num_v); // BFS(너비우선탐색)하는 함수
 void Init_visited(); // visited 배열 초기화하는 함수
-
+int DuplicateCheck(Edge* toCheck, int num); // Edge 삽입 시, 중복되는 종점이 있는지 확인하는 함수
 
 int main()
 {
@@ -175,6 +175,13 @@ void InsertEdge(header* head){
         return ;
     }
 
+    
+    if(DuplicateCheck(head->header_V[Point_S],Point_E)==1) // 삽입하려는 Edge가 존재하면, 오류 메시지 출력 후 종료 (전처리 검사)
+    {
+        printf("The Edge to %d already exists.\n\n", Point_E);
+        return;
+    }
+
     // 인접리스트에 삽입할 Edge노드 생성 및 초기화
     Edge* EdgetoInsert_E = (Edge*)malloc(sizeof(Edge));
     EdgetoInsert_E->Num_vertex = Point_E;
@@ -190,6 +197,7 @@ void InsertEdge(header* head){
         SearchtoInsert->Edge_Vertex = EdgetoInsert_E;
     }
 }
+
 Edge* Search(Edge *Vertex_S, int Point_E) // Edge의 삽입할 위치를 탐색하는 함수
 {
    Edge* temp = Vertex_S->Edge_Vertex;
@@ -295,4 +303,14 @@ void Init_visited() // visited 초기화 함수
     {
         visited[i] = 0; 
     }
+}
+
+int DuplicateCheck(Edge* toCheck, int num) // 삽입하려는 Edge가 이미 존재하는지 확인하는 함수
+{   
+    Edge* temp;
+    for(temp = toCheck; temp; temp = temp->Edge_Vertex) // Edge 중복 확인 검사
+    {
+        if(temp->Num_vertex == num){return 1;} // 삽입하고자 하는 Edge가 이미 존재한다면, 1 반환
+    }
+    return 0; // 검사 결과 존재하지 않으면, 0 반환
 }
