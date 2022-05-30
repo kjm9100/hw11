@@ -18,7 +18,7 @@ typedef struct header{
 // Depth First Search를 위한 visited 배열
 short visited[Max_size] = {0,};
 
-// Breath First Search를 위한 큐 배열
+// Breadth First Search를 위한 큐 배열
 int queue[Max_size+1] = {0};
 int front = 0, rear = 0;
 
@@ -35,7 +35,7 @@ void InsertEdge(header* head); // Edge 삽입하는 함수(방향 그래프로 구현)
 Edge* Search(Edge *Vertex_S, int Point_E); // Edge 삽입 위치 탐색하는 함수
 void PrintGraph(header* head); // 그래프 출력하는 함수
 void DepthFS(header* head,int num_v); // DFS(깊이우선탐색)하는 함수(연결리스트가 아닐  
-void BreathFS(header *head, int num_v); // BFS(너비우선탐색)하는 함수
+void BreadthFS(header *head, int num_v); // BFS(너비우선탐색)하는 함수
 void Init_visited(); // visited 배열 초기화하는 함수
 int DuplicateCheck(Edge* toCheck, int num); // Edge 삽입 시, 중복되는 종점이 있는지 확인하는 함수
 
@@ -56,7 +56,7 @@ int main()
         printf("----------------------------------------------------------------\n");
         printf("      Initialize Graph   = z                                    \n");
         printf("      Insert Vertex      = v          Insert Edge         = e   \n");
-        printf("      Depth First Search = d          Breath First Search = b   \n");
+        printf("      Depth First Search = d          Breadth First Search = b   \n");
         printf("      Print Graph        = p          Quit                = q   \n");
         printf("----------------------------------------------------------------\n");
 
@@ -91,7 +91,7 @@ int main()
             Init_visited(); // visited Mark배열 초기화
             for(m = 0, flag = 0; m < header.Cnt_vertex; m++){ // 동떨어진 정점과 부분그래프 유무 파악
                 if(!visited[m]){
-                    BreathFS(&header, m); // 너비우선탐색
+                    BreadthFS(&header, m); // 너비우선탐색
                     printf("\n"); // 동떨어진 부분그래프 파악을 위한 출력
                     flag++;
                 }
@@ -262,7 +262,7 @@ void DepthFS(header* head,int num_v) // 깊이우선탐색 함수
         }
     }
 }
-void BreathFS(header *head, int num_v) // 너비우선탐색 함수
+void BreadthFS(header *head, int num_v) // 너비우선탐색 함수
 {
     if(head->Cnt_vertex ==0) // Vertex 존재하지 않을 경우, 메시지 출력 후 종료(전처리 검사)
     {
