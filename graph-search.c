@@ -27,7 +27,9 @@ int front = 0, rear = 0;
 void Initialize(header* head); // 그래프 초기화하는 함수
 void freeGraph(header* head); // 인접리스트에 할당된 메모리를 모두 해제 
 void InsertVertex(header* head); // Vertex 삽입하는 함수
-
+void InsertEdge(header* head); // Edge 삽입하는 함수(방향 그래프로 구현)
+Edge* Search(Edge *Vertex_S, int Point_E); // Edge 삽입 위치 탐색하는 함수
+void PrintGraph(header* head); // 그래프 출력하는 함수
 
 
 int main()
@@ -64,6 +66,7 @@ int main()
             InsertVertex(&header);
             break;
         case 'e': case 'E': // e, E 조작키 입력 시, Edge 삽입
+            InsertEdge(&header);
             break;
         case 'd': case 'D': // d, D 조작키 입력 시, 깊이우선탐색 및 동떨어진 정점이나 부분그래프 유무 파악
             break;
@@ -132,3 +135,77 @@ void InsertVertex(header* head){ // Vertex 삽입하는 함수
     head->Cnt_vertex += 1;
 }
 
+void InsertEdge(header* head){
+    int Point_S, Point_E; // 시점 번호, 종점 번호
+    printf("삽입할 간선을 (시점, 종점) 형식으로 입력해주세요 : ");
+    scanf("%d %d", &Point_S, &Point_E);
+    if(Point_S >= head->Cnt_vertex) // 삽입되지 않은 Vertex를 시점으로 한 Edge를 삽입하려는 경우, 안내메시지 출력 후 종료(전처리 검사)
+    {
+        printf("No Vertex for number %d\n\n", Point_S);
+        return ;
+    }else if(Point_E >= head->Cnt_vertex) // 삽입되지 않은 Vertex를 종점으로 한 Edge를 삽입하려는 경우, 안내메시지 출력 후 종료(전처리 검사)
+    {
+        printf("No Vertex for number %d\n\n" ,Point_E);
+        return ;
+    }
+    // 인접리스트에 삽입할 Edge노드 생성 및 초기화
+    Edge* EdgetoInsert_E = (Edge*)malloc(sizeof(Edge));
+    EdgetoInsert_E->Num_vertex = Point_E;
+    EdgetoInsert_E->Edge_Vertex = NULL;
+    // 간선을 갖지 않거나 해당 시점으로부터 진출하는 Edge 중에 종점 번호가 가장 작을 경우, 맨 앞에 삽입
+    if(head->header_V[Point_S] == NULL || head->header_V[Point_S]->Num_vertex > Point_E) 
+    {
+        EdgetoInsert_E->Edge_Vertex = head->header_V[Point_S];
+        head->header_V[Point_S] = EdgetoInsert_E;
+    }else{ // 중간 또는 마지막에 삽입될 경우
+        Edge * SearchtoInsert = Search(head->header_V[Point_S], Point_E);
+        EdgetoInsert_E->Edge_Vertex = SearchtoInsert->Edge_Vertex;
+        SearchtoInsert->Edge_Vertex = EdgetoInsert_E;
+    }
+}
+Edge* Search(Edge *Vertex_S, int Point_E) // Edge의 삽입할 위치를 탐색하는 함수
+{
+   Edge* temp = Vertex_S->Edge_Vertex;
+   Edge* temp_B = Vertex_S;
+   while(temp) // Edge를 오름차순으로 삽입하기 위해 위치 탐색
+   {
+        if(temp->Num_vertex > Point_E) // 존재하는 종점들 중에서 삽입할 종점 번호보다 큰 종점 앞에 삽입하기 위한 위치 탐색 
+        {
+            return temp_B;
+        }
+        temp_B = temp;
+        temp = temp->Edge_Vertex;
+   }
+    return temp_B; // 삽입할 종점 번호가 존재하는 종점들보다 큰 것이므로 삽입할 위치인 마지막을 반환
+}
+void PrintGraph(header *head){ // 일정한 형식에 따라 Graph 출력
+    if(head->Cnt_vertex ==0)
+    {
+        printf("Nothing to Print..\n\n");
+        return ;
+    }
+
+    printf("----------------------\n");
+    printf(" E(G) = (a, b)\n");
+    printf("----------------------\n");
+    printf(" a :      b       \n");
+    printf("----------------------\n");
+    Edge* temp = NULL;
+    for(int i = 0; i < head->Cnt_vertex; i++){ // Vertex마다 자기자신을 시점으로 하는 Edge 출력
+        printf(" %d : ", i); // 시점 번호 출력
+        temp = head->header_V[i];
+        if(!temp) // Edge가 없을 경우, 메시지 출력
+        {
+            printf(" No Edge..\n");
+            continue;
+        }
+        while(temp) // Edge를 모두 출력
+        {
+            printf("%d ", temp->Num_vertex);
+            temp = temp->Edge_Vertex;
+        }
+        printf("\n");
+    }
+   printf("----------------------\n");
+   printf("The number of Vertices: %d", head->Cnt_vertex); // 삽입된 Vertex 개수 출력
+}
