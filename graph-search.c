@@ -22,6 +22,10 @@ short visited[Max_size] = {0,};
 int queue[Max_size+1] = {0};
 int front = 0, rear = 0;
 
+// 큐 관련 함수
+void enqueue(int num); // 큐에 값을 삽입하는 함수
+int dequeue(); // 큐에서 값을 삭제하는 함수
+
 
 // 함수 구현
 void Initialize(header* head); // 그래프 초기화하는 함수
@@ -30,6 +34,9 @@ void InsertVertex(header* head); // Vertex 삽입하는 함수
 void InsertEdge(header* head); // Edge 삽입하는 함수(방향 그래프로 구현)
 Edge* Search(Edge *Vertex_S, int Point_E); // Edge 삽입 위치 탐색하는 함수
 void PrintGraph(header* head); // 그래프 출력하는 함수
+void DepthFS(header* head,int num_v); // DFS(깊이우선탐색)하는 함수(연결리스트가 아닐  
+void BreathFS(header *head, int num_v); // BFS(너비우선탐색)하는 함수
+void Init_visited(); // visited 배열 초기화하는 함수
 
 
 int main()
@@ -69,8 +76,27 @@ int main()
             InsertEdge(&header);
             break;
         case 'd': case 'D': // d, D 조작키 입력 시, 깊이우선탐색 및 동떨어진 정점이나 부분그래프 유무 파악
+            Init_visited(); // visited Mark배열 초기화
+            for(m =0, flag = 0; m < header.Cnt_vertex; m++){ // 동떨어진 정점과 부분그래프 유무 파악 
+                if(!visited[m])
+                {
+                    DepthFS(&header, m); // 깊이우선탐색
+                    printf("\n"); // 동떨어진 부분그래프 파악을 위한 출력
+                    flag++;
+                }
+            }
+            if(flag > 1){printf("이어지지 않은 부분그래프들이 존재하는 그래프입니다.\n\n");} // 동떨어진 정점 또는 부분그래프 존재 시, 메시지 출력
             break;
         case 'b': case 'B': // b, B 조작키 입력 시, 너비우선탐색 및 동떨어진 정점이나 부분그래프 유무 파악
+            Init_visited(); // visited Mark배열 초기화
+            for(m = 0, flag = 0; m < header.Cnt_vertex; m++){ // 동떨어진 정점과 부분그래프 유무 파악
+                if(!visited[m]){
+                    BreathFS(&header, m); // 너비우선탐색
+                    printf("\n"); // 동떨어진 부분그래프 파악을 위한 출력
+                    flag++;
+                }
+            }
+            if(flag > 1){printf("이어지지 않은 부분그래프들이 존재하는 그래프입니다.\n\n");} // 동떨어진 정점 또는 부분그래프 존재 시, 메시지 출력
             break;
         case 'p': case 'P': // p, P 조작키 입력 시, Graph 출력
             PrintGraph(&header);
@@ -148,6 +174,7 @@ void InsertEdge(header* head){
         printf("No Vertex for number %d\n\n" ,Point_E);
         return ;
     }
+
     // 인접리스트에 삽입할 Edge노드 생성 및 초기화
     Edge* EdgetoInsert_E = (Edge*)malloc(sizeof(Edge));
     EdgetoInsert_E->Num_vertex = Point_E;
@@ -208,4 +235,64 @@ void PrintGraph(header *head){ // 일정한 형식에 따라 Graph 출력
     }
    printf("----------------------\n");
    printf("The number of Vertices: %d", head->Cnt_vertex); // 삽입된 Vertex 개수 출력
+}
+
+void DepthFS(header* head,int num_v) // 깊이우선탐색 함수
+{
+     if(head->Cnt_vertex ==0) // Vertex 존재하지 않을 경우, 메시지 출력 후 종료(전처리 검사)
+    {
+        printf("Nothing to Search..\n\n");
+        return ;
+    }
+    visited[num_v] = 1; // 방문 표시
+    printf("[%d]", num_v); // 해당 값 출력
+    Edge* temp = NULL;
+    for(temp = head->header_V[num_v]; temp; temp = temp->Edge_Vertex ){ // Vertex가 가진 Edge들 탐색
+        if(!visited[temp->Num_vertex]) // Edge의 종점이 방문하지 않은 Vertex일 경우, 그 Vertex 기준으로 다시 DFS 진행
+        {
+            DepthFS(head, temp->Num_vertex);
+        }
+    }
+}
+void BreathFS(header *head, int num_v) // 너비우선탐색 함수
+{
+    if(head->Cnt_vertex ==0) // Vertex 존재하지 않을 경우, 메시지 출력 후 종료(전처리 검사)
+    {
+        printf("Nothing to Search..\n\n");
+        return ;
+    }
+    int v = 0;
+    front = 0, rear = 0; // 큐의 front, rear 초기화
+    Edge* temp;
+    // 탐색시점의 번호 출력 및 방문 표시 후 그 Vertex 번호 큐에 삽입
+    printf("[%d]", num_v);
+    visited[num_v] = 1;
+    enqueue(num_v);
+    while(front != head->Cnt_vertex) // Vertex 개수만큼 enqueue와 dequeue가 이뤄지므로 front가 삽입된 Vertex 개수와 같다면 탐색이 모두 이뤄진 것
+    {
+        v = dequeue(); // 큐에서 탐색하고자 하는 Vertex 번호를 가져온다
+        for(temp = head->header_V[v]; temp; temp = temp->Edge_Vertex ) // 해당 Vertex에서 진출하는 Edge들을 탐색
+        {
+            if(!visited[temp->Num_vertex]) // 방문하지 않은 Vertex일 경우, 그 Vertex번호를 출력하고, 큐에 번호를 저장 및 방문 표시
+            {
+                printf("[%d]", temp->Num_vertex);
+                enqueue(temp->Num_vertex);
+                visited[temp->Num_vertex] = 1;
+            }
+        }
+    
+    }
+}
+void enqueue(int num){ // 큐에 값을 쓰는 함수
+    queue[++rear] = num;
+}
+int dequeue(){ // 큐에서 값을 삭제, 반환하는 함수
+    return queue[++front];
+}
+void Init_visited() // visited 초기화 함수
+{
+    for(int i = 0; i< Max_size; i++) // visited 표시 배열 초기화
+    {
+        visited[i] = 0; 
+    }
 }
